@@ -32,7 +32,7 @@ public class Player : MonoBehaviour {
 
     public byte SelectedBlockIndex = 1;
 
-
+    public Text SelectedBlockText;
 
     private void Start()
     {
@@ -40,7 +40,7 @@ public class Player : MonoBehaviour {
         world = GameObject.Find("World").GetComponent<World>();
 
         Cursor.lockState = CursorLockMode.Locked;
-        Debug.Log(world.BlockTypes[SelectedBlockIndex].BlockName + " Selected Block");
+        SelectedBlockText.text = world.BlockTypes[SelectedBlockIndex].BlockName + " Selected Block";
     }
 
     private void FixedUpdate()
@@ -145,7 +145,7 @@ public class Player : MonoBehaviour {
             if (SelectedBlockIndex < 1)
                 SelectedBlockIndex = (byte)(length);
 
-            Debug.Log(world.BlockTypes[SelectedBlockIndex].BlockName + " Selected Block");
+            SelectedBlockText.text = world.BlockTypes[SelectedBlockIndex].BlockName + " Selected Block";
         }
 
         if(HighlightBlock.gameObject.activeSelf)

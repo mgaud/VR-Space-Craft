@@ -10,6 +10,8 @@ public class World : MonoBehaviour {
     public Transform Player;
     public Vector3 SpawnPosition;
 
+    public GameObject DebugScreen;
+
     public BiomeAttribute Data;
 
     public Material material;
@@ -44,6 +46,11 @@ public class World : MonoBehaviour {
 
         if (ChunksToCreate.Count() > 0 && !IsCreatingChunks)
             StartCoroutine("CreateChunks");
+
+        if(Input.GetKeyDown(KeyCode.F3))
+        {
+            DebugScreen.SetActive(!DebugScreen.activeSelf);
+        }
     }
 
     void GenerateWorld()
