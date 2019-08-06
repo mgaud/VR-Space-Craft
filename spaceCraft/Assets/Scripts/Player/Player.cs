@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Player : MonoBehaviour {
 
@@ -10,7 +11,10 @@ public class Player : MonoBehaviour {
     public float SprintSpeed = 6f;
     public float JumpForce = 5f;
     public float Gravity = -9.8f;
-    
+    public Transform HighlightBlock;
+    public Transform PlaceBlock;
+    public float CheckIncrement = 0.1f;
+    public float Reach = 8f;
 
     public float PlayerWidth = 0.15f;
 
@@ -26,10 +30,17 @@ public class Player : MonoBehaviour {
     private float VerticalMomentum;
     private bool JumpRequest;
 
+    public byte SelectedBlockIndex = 1;
+
+
+
     private void Start()
     {
         Camera = GameObject.Find("Main Camera").transform;
         world = GameObject.Find("World").GetComponent<World>();
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Debug.Log(world.BlockTypes[SelectedBlockIndex].BlockName + " Selected Block");
     }
 
     private void FixedUpdate()
@@ -51,6 +62,7 @@ public class Player : MonoBehaviour {
     private void Update()
     {
         GetPlayerInput();
+        PlaceCursorBlock();
 
     }
 
@@ -115,6 +127,68 @@ public class Player : MonoBehaviour {
             JumpRequest = true;
         }
 
+        float scroll = Input.GetAxis("Mouse ScrollWheel");
+
+        if (scroll != 0)
+        {
+
+            if (scroll > 0)
+                SelectedBlockIndex++;
+            else
+                SelectedBlockIndex--;
+
+            var length = world.BlockTypes.Length - 1;
+
+            if (SelectedBlockIndex > (byte)(length))
+                SelectedBlockIndex = 1;
+
+            if (SelectedBlockIndex < 1)
+                SelectedBlockIndex = (byte)(length);
+
+            Debug.Log(world.BlockTypes[SelectedBlockIndex].BlockName + " Selected Block");
+        }
+
+        if(HighlightBlock.gameObject.activeSelf)
+        {
+            //destroy block
+            if (Input.GetMouseButtonDown(0))
+                world.GetChunkFromVector3(HighlightBlock.position).EditVoxel(HighlightBlock.position, 0);
+
+            //create
+            if (Input.GetMouseButtonDown(1))
+                world.GetChunkFromVector3(PlaceBlock.position).EditVoxel(PlaceBlock.position, SelectedBlockIndex);
+        }
+
+    }
+
+    public void PlaceCursorBlock()
+    {
+        float step = CheckIncrement;
+        Vector3 lastPosition = new Vector3();
+
+        while(step < Reach)
+        {
+            Vector3 pos = Camera.position + (Camera.forward * step);
+
+            if(world.CheckForVoxel(pos))
+            {
+                HighlightBlock.position = new Vector3(Mathf.FloorToInt(pos.x), Mathf.FloorToInt(pos.y), Mathf.FloorToInt(pos.z));
+                PlaceBlock.position = lastPosition;
+
+                HighlightBlock.gameObject.SetActive(true);
+                PlaceBlock.gameObject.SetActive(true);
+
+                return;
+            }
+            else
+            {
+                lastPosition = new Vector3(Mathf.FloorToInt(pos.x), Mathf.FloorToInt(pos.y), Mathf.FloorToInt(pos.z));
+                step += CheckIncrement;
+            }
+        }
+        HighlightBlock.gameObject.SetActive(false);
+        PlaceBlock.gameObject.SetActive(false);
+
     }
 
     void Jump()
@@ -134,14 +208,12 @@ public class Player : MonoBehaviour {
             world.CheckForVoxel(new Vector3(transform.position.x - PlayerWidth, transform.position.y + DownSpeed, transform.position.z + PlayerWidth))
            )
         {
-            Debug.Log("no working");
             IsGrounded = true;
             return 0;
 
         }
         else
         {
-            Debug.Log("no eish");
             IsGrounded = false;
             return DownSpeed;
 
