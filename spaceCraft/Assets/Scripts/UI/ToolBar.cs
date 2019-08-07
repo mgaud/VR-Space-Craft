@@ -23,8 +23,6 @@ public class ToolBar : MonoBehaviour {
 
         foreach(ItemSlot slot in ItemSlots)
         {
-            Debug.Log(world.BlockTypes[slot.ItemId].BlockName);
-
             slot.Icon.sprite = world.BlockTypes[slot.ItemId].Icon;
             slot.Icon.enabled = true;
         }
